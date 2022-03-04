@@ -16,7 +16,7 @@ type Client = {
 
 function App() {
   const [intro, setIntro] = useState(true);
-  const [mode, setMode] = useState<"host" | "share">("share");
+  const [mode, setMode] = useState<"host" | "share">("share"); // TODO: change to share when done
 
   useEffect(() => {
     setTimeout(() => setIntro(false), 500); // rework, i can just chain the animations
@@ -69,8 +69,12 @@ function App() {
           transition={{ delay: 0.6 }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="grid px-4 max-w-xs md:max-w-xl w-full"
+          className="px-4"
         >
+          <div className="space-x-2">
+            <button onClick={() => setMode("share")}>share</button>
+            <button onClick={() => setMode("host")}>host</button>
+          </div>
           {mode === "host" ? <Host /> : <Share />}
         </motion.div>
       )}

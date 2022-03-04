@@ -1,6 +1,20 @@
-import { getFirestore } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  CollectionReference,
+  DocumentData,
+  DocumentReference,
+  getDoc,
+  getDocs,
+  getFirestore,
+  onSnapshot,
+  query,
+  QueryDocumentSnapshot,
+  updateDoc,
+  where,
+} from "firebase/firestore";
 import { AnimatePresence } from "framer-motion";
-import { FC, useRef, useState } from "react";
+import { FC, FormEventHandler, useEffect, useRef, useState } from "react";
 import stunServers from "../lib/stun";
 
 const db = getFirestore();
@@ -8,45 +22,94 @@ const db = getFirestore();
 // enter code and share screen to host
 
 const Share: FC = () => {
-  const [localStream, setLocalStream] = useState<MediaStream>(
-    new MediaStream()
-  );
   const [loading, setLoading] = useState(false);
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
 
-  const pc = new RTCPeerConnection(stunServers);
+  let pc: RTCPeerConnection;
+  let localStream: MediaStream;
 
-  const startSharing = async () => {
+  useEffect(() => {
+    // we can't init the refs here because we need to wait for the code
+    // same with localStream
+
+    pc = new RTCPeerConnection(stunServers);
+  }, []);
+
+  const startSharing: FormEventHandler<HTMLFormElement> = async (e) => {
+    e.preventDefault();
     setLoading(true);
-    navigator.mediaDevices
-      .getDisplayMedia({ video: true })
-      .then(async (stream) => {
-        setLocalStream(stream);
-        const offerDescription = await pc.createOffer();
-        await pc.setLocalDescription(offerDescription);
-        const offer = {
-          sdp: offerDescription.sdp,
-          type: offerDescription.type,
-        };
-      })
-      .catch((err) => {
-        console.log(err);
-      })
-      .finally(() => setLoading(false));
+
+    const code = (e.target as HTMLFormElement).code?.value;
+
+    try {
+      const docQuery = query(
+        collection(db, "connections"),
+        where("code", "==", code)
+      );
+
+      const querySnapshot = (await getDocs(docQuery)).docs[0];
+      const docRef = querySnapshot.ref;
+      const docData = querySnapshot.data();
+      const hostRef = collection(docRef, "host");
+      const clientRef = collection(docRef, "client");
+
+      pc.onicecandidate = (event) => {
+        event.candidate && addDoc(clientRef, event.candidate.toJSON());
+      };
+
+      // get screen stream
+      localStream = await navigator.mediaDevices.getDisplayMedia({
+        video: true,
+      });
+
+      localStream
+        .getTracks()
+        .forEach((track) => pc.addTrack(track, localStream));
+      if (localVideoRef.current) localVideoRef.current.srcObject = localStream;
+
+      // create answer
+      const offerDescription = docData.offer;
+      await pc.setRemoteDescription(
+        new RTCSessionDescription(offerDescription)
+      );
+
+      const answerDescription = await pc.createAnswer();
+      await pc.setLocalDescription(answerDescription);
+
+      // save answer to db
+      updateDoc(docRef, {
+        answer: { sdp: answerDescription.sdp, type: answerDescription.type },
+      });
+
+      onSnapshot(hostRef, (snapshot) => {
+        snapshot.docChanges().forEach((change) => {
+          console.log(change);
+          if (change.type === "added") {
+            let data = change.doc.data();
+            pc.addIceCandidate(new RTCIceCandidate(data));
+          }
+        });
+      });
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-2xl font-semibold text-high">view</h1>
+      <h1 className="text-2xl font-semibold text-high">share</h1>
 
-      <div className="flex flex-col gap-2">
+      <form className="flex flex-col gap-2" onSubmit={startSharing}>
         <label htmlFor="code" className="text-med text-lg text-center">
           enter code
         </label>
         <input
           type="text"
           id="code"
+          name="code"
           className="p-3 rounded-xl text-xl text-center"
           size={4}
           maxLength={4}
@@ -63,7 +126,7 @@ const Share: FC = () => {
         >
           connect
         </button>
-      </div>
+      </form>
       <video ref={localVideoRef} autoPlay playsInline></video>
     </div>
   );

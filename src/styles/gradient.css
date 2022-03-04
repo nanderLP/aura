@@ -1,0 +1,22 @@
+.gradient {
+  animation: animateBg 5s linear infinite;
+  background-image: linear-gradient(
+    90deg,
+    #9adcff,
+    #ffb2a6,
+    #ff8aae,
+    #9adcff,
+    #ffb2a6
+  );
+  background-size: 400% 100%;
+  background-clip: text;
+  color: transparent;
+}
+@keyframes animateBg {
+  0% {
+    background-position: 0% 0%;
+  }
+  100% {
+    background-position: 100% 0%;
+  }
+}

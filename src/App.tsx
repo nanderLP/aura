@@ -19,7 +19,7 @@ function App() {
   const [mode, setMode] = useState<"host" | "share">("share"); // TODO: change to share when done
 
   useEffect(() => {
-    setTimeout(() => setIntro(false), 500); // rework, i can just chain the animations
+    setTimeout(() => setIntro(false), 3000); // rework, i can just chain the animations
   }, []);
 
   /*useEffect(() => {

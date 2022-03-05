@@ -21,20 +21,21 @@ const db = getFirestore();
 
 // enter code and share screen to host
 
-const Share: FC = () => {
+const Share: FC<{ onSize: CallableFunction }> = (props) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
 
-  let pc: RTCPeerConnection;
+  let pc = new RTCPeerConnection(stunServers);
+  
   let localStream: MediaStream;
 
   useEffect(() => {
     // we can't init the refs here because we need to wait for the code
     // same with localStream
 
-    pc = new RTCPeerConnection(stunServers);
+    //pc = new RTCPeerConnection(stunServers);
   }, []);
 
   const startSharing: FormEventHandler<HTMLFormElement> = async (e) => {
@@ -60,6 +61,8 @@ const Share: FC = () => {
       const docData = querySnapshot.data();
       const hostRef = collection(docRef, "host");
       const clientRef = collection(docRef, "client");
+
+      console.log(pc);
 
       pc.onicecandidate = (event) => {
         event.candidate && addDoc(clientRef, event.candidate.toJSON());

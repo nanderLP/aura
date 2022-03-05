@@ -21,8 +21,10 @@ const db = getFirestore();
 
 // show code and accept connection from share client
 
-const Host: FC = () => {
+const Host: FC<{ onSize: CallableFunction }> = (props) => {
   const [code, setCode] = useState<string | null>(null);
+  const [connectionState, setConnectionState] =
+    useState<RTCIceConnectionState | null>(null);
 
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
 
@@ -40,6 +42,12 @@ const Host: FC = () => {
     pc = new RTCPeerConnection(stunServers);
     remoteStream = new MediaStream();
     if (remoteVideoRef.current) remoteVideoRef.current.srcObject = remoteStream;
+
+    /*setInterval(() => {
+      console.log("REMOTE STREAM", remoteStream.active);
+      console.log("CONNECTION STATE", pc.iceConnectionState);
+      console.log("GATHERING STATE", pc.iceGatheringState);
+    }, 1000);*/
 
     docRef = doc(collection(db, "connections"));
 
@@ -60,6 +68,19 @@ const Host: FC = () => {
 
         remoteStream.addTrack(track);
       });
+    };
+
+    pc.oniceconnectionstatechange = (event) => {
+      console.log("ICE CONNECTION STATE CHANGE", pc.iceConnectionState);
+      setConnectionState(pc.iceConnectionState);
+    };
+
+    pc.onconnectionstatechange = (event) => {
+      console.log("CONNECTION STATE CHANGE", event);
+    };
+
+    remoteStream.onremovetrack = (event) => {
+      console.log("REMOVING TRACK", event);
     };
 
     // Get candidates for caller, save to db

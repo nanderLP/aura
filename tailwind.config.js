@@ -10,6 +10,7 @@ module.exports = {
         sans: ["Inter", "sans-serif"],
       },
       colors: {
+        error: "#ff0000",
         high: "rgba(255,255,255,0.87)",
         med: "rgba(255,255,255,0.6)",
         dp: {

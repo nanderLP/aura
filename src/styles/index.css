@@ -1,4 +1,8 @@
 @tailwind base;
+
+.highlight ~ button {
+  @apply bg-red-400;
+}
+
 @tailwind components;
 @tailwind utilities;
-

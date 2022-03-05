@@ -22,20 +22,6 @@ function App() {
     setTimeout(() => setIntro(false), 3000); // rework, i can just chain the animations
   }, []);
 
-  /*useEffect(() => {
-    localStream.getTracks().forEach((track) => pc.addTrack(track, localStream));
-    if (localVideoRef.current) {
-      localVideoRef.current.srcObject = localStream;
-    }
-  }, [localStream]);
-
-  useEffect(() => {
-    if (remoteVideoRef.current) {
-      remoteVideoRef.current.srcObject = remoteStream;
-    }
-  }, [remoteStream]);
-  */
-
   const Client: FC<{ client: Client }> = ({ client }) => (
     <motion.div
       initial={{ opacity: 0 }}
@@ -50,7 +36,7 @@ function App() {
   );
 
   return (
-    <motion.main className="min-h-screen grid place-items-center">
+    <motion.main className="min-h-screen flex justify-center">
       <AnimatePresence>
         {intro && (
           <motion.div
@@ -58,9 +44,9 @@ function App() {
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -30, opacity: 0 }}
             transition={{ duration: 0.5 }}
-            className="absolute"
+            className="self-center absolute"
           >
-            <h1 className="text-9xl font-black gradient">aura</h1>
+            <h1 className="text-9xl font-black select-none gradient">aura</h1>
           </motion.div>
         )}
       </AnimatePresence>
@@ -69,13 +55,46 @@ function App() {
           transition={{ delay: 0.6 }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="px-4"
+          className="px-4 mt-[40vh] flex flex-col gap-8"
         >
-          <div className="space-x-2">
-            <button onClick={() => setMode("share")}>share</button>
-            <button onClick={() => setMode("host")}>host</button>
-          </div>
-          {mode === "host" ? <Host /> : <Share />}
+          <motion.div
+            layout="position"
+            className="h-8 grid grid-cols-2 text-med"
+          >
+            <div className="flex items-center justify-center">
+              <button
+                onClick={() => setMode("share")}
+                className={`absolute text-lg hover:text-high${
+                  mode === "share" ? " text-high" : ""
+                }`}
+              >
+                share
+              </button>
+              {mode === "share" && (
+                <motion.div
+                  layoutId="selected"
+                  className="bg-dp-2 w-full h-full rounded-lg px-12 py-5"
+                />
+              )}
+            </div>
+            <div className="flex items-center justify-center">
+              <button
+                onClick={() => setMode("host")}
+                className={`absolute text-lg hover:text-high${
+                  mode === "host" ? " text-high" : ""
+                }`}
+              >
+                host
+              </button>
+              {mode === "host" && (
+                <motion.div
+                  layoutId="selected"
+                  className="bg-dp-2 w-full h-full rounded-lg px-12 py-5"
+                />
+              )}
+            </div>
+          </motion.div>
+          <div>{mode === "host" ? <Host /> : <Share />}</div>
         </motion.div>
       )}
     </motion.main>

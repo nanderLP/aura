@@ -13,7 +13,7 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { FC, FormEventHandler, useEffect, useRef, useState } from "react";
 import stunServers from "../lib/stun";
 
@@ -23,6 +23,7 @@ const db = getFirestore();
 
 const Share: FC = () => {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
 
@@ -38,9 +39,10 @@ const Share: FC = () => {
 
   const startSharing: FormEventHandler<HTMLFormElement> = async (e) => {
     e.preventDefault();
-    setLoading(true);
 
-    const code = (e.target as HTMLFormElement).code?.value;
+    const codeEl = (e.target as HTMLFormElement).code;
+    const code = codeEl.value;
+    codeEl.value = "";
 
     try {
       const docQuery = query(
@@ -49,6 +51,11 @@ const Share: FC = () => {
       );
 
       const querySnapshot = (await getDocs(docQuery)).docs[0];
+      if (!querySnapshot) throw new Error("wrong code");
+
+      // actually set up stuff
+      setLoading(true);
+
       const docRef = querySnapshot.ref;
       const docData = querySnapshot.data();
       const hostRef = collection(docRef, "host");
@@ -91,7 +98,8 @@ const Share: FC = () => {
           }
         });
       });
-    } catch (error) {
+    } catch (error: any) {
+      setError(error.message);
       console.log(error);
     } finally {
       setLoading(false);
@@ -99,26 +107,33 @@ const Share: FC = () => {
   };
 
   return (
-    <div className="flex flex-col gap-4">
-      <h1 className="text-2xl font-semibold text-high">share</h1>
+    <div className="">
+      <form className="flex flex-col gap-4" onSubmit={startSharing}>
+        <div className="flex flex-col gap-1">
+          <label htmlFor="code" className="text-high text-xl">
+            code
+          </label>
+          <input
+            type="text"
+            id="code"
+            name="code"
+            className={`p-3 rounded-xl text-xl text-center${
+              error ? " outline-error" : ""
+            }`}
+            disabled={loading}
+            size={4}
+            maxLength={4}
+            autoFocus
+            placeholder="1234"
+            onChange={(e) => {
+              if (error) setError("");
+              if (e.currentTarget.maxLength === e.currentTarget.value.length)
+                document.getElementById("connect")?.focus();
+            }}
+          />
+          {error && <motion.p className="text-error text-sm">{error}</motion.p>}
+        </div>
 
-      <form className="flex flex-col gap-2" onSubmit={startSharing}>
-        <label htmlFor="code" className="text-med text-lg text-center">
-          enter code
-        </label>
-        <input
-          type="text"
-          id="code"
-          name="code"
-          className="p-3 rounded-xl text-xl text-center"
-          size={4}
-          maxLength={4}
-          placeholder="1234"
-          onChange={(e) => {
-            if (e.currentTarget.maxLength === e.currentTarget.value.length)
-              document.getElementById("connect")?.focus();
-          }}
-        />
         <button
           id="connect"
           className="bg-dp-2 rounded-xl p-2"

@@ -1,25 +1,5 @@
-/* sticking to the defaults here */
-
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-body,
-html,
-#💜 {
-  height: 100%;
-  width: 100%;
-}
-
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
-    monospace;
-}
+/* import reset */
+@import "reset.css";
 
 /* own styles */
 
@@ -47,6 +27,9 @@ code {
   --surfaceVariant: #f5dddc;
   --onSurfaceVariant: #534343;
   --outline: #857372;
+
+  /* i need a success color, can't use primary because it's neither blue or green (i'll use it as warning / on hold) */
+  --success: #83bd75;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -73,7 +56,77 @@ code {
     --surfaceVariant: #534343;
     --onSurfaceVariant: #d8c2c1;
     --outline: #9f8c8b;
+
+    /* look up */
+    --success: #446a46;
   }
+}
+
+/* typography stuff */
+.label-large {
+  line-height: 20px;
+  font-size: 14px;
+  letter-spacing: 0.1px;
+  font-weight: 500;
+}
+
+/* component stuff */
+button {
+  border: none;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: default;
+}
+
+button[data-variant="filled"] {
+  height: 40px;
+  padding: 0 1.5rem;
+  border-radius: 20px;
+}
+
+/* it's not actually a fab, but it has the styles, liv picked it :) */
+button[data-variant="fab"] {
+  height: 56px;
+  border-radius: 1rem;
+  padding: 1rem;
+}
+
+button[data-color="primary"] {
+  background-color: var(--primary);
+  color: var(--onPrimary);
+}
+
+button[data-color="secondary"] {
+  background-color: var(--secondary);
+  color: var(--onSecondary);
+}
+
+/* sticking to the defaults here */
+
+body {
+  margin: 0;
+  background-color: var(--background);
+  color: var(--onSurface);
+  font-family: "Roboto", sans-serif;
+  /* font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif; */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body,
+html,
+#💜 {
+  height: 100%;
+  width: 100%;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+    monospace;
 }
 
 /* custom gradient */

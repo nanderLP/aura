@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, m } from "framer-motion";
 import Navigation from "./components/Navigation";
+import Host from "./components/Host";
+import Connect from "./components/Connect";
 
 // breakpoints, following the material you specifications
 const bp = (size: number) => `@media (min-width: ${size}px)`;
@@ -8,6 +10,8 @@ const medium = bp(600);
 const expanded = bp(840);
 
 function App() {
+  // intro handling
+
   const skipIntro = sessionStorage.getItem("introPlayed") === "true";
 
   const [intro, setIntro] = useState(true);
@@ -19,6 +23,13 @@ function App() {
       }, 2000);
     }
   });
+
+  // mode handling
+  const [mode, setMode] = useState<"connect" | "host">("connect");
+
+  useEffect(() => {
+    console.log(mode);
+  }, [mode]);
 
   return (
     <>
@@ -49,17 +60,27 @@ function App() {
           </m.div>
         )}
       </AnimatePresence>
-      <main
+      <div
         css={{
           height: "100%",
           display: "flex",
-          flexDirection: "column",
           justifyContent: "center",
           alignItems: "center",
+          gap: "1rem",
         }}
       >
-        <Navigation/>
-      </main>
+        <Navigation mode={mode} onChange={setMode} />
+        <main
+          css={{
+            width: "100%",
+            [medium]: {
+              width: "384px",
+            },
+          }}
+        >
+          {mode === "host" ? <Host /> : <Connect />}
+        </main>
+      </div>
     </>
   );
 }

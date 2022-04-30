@@ -1,40 +1,80 @@
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { m } from "framer-motion";
-import { animated, useSpring } from "@react-spring/web";
+import * as Tooltip from "@radix-ui/react-tooltip";
 
-const Navigation: FC = () => {
-  const [selected, setSelected] = useState("watch");
+type Mode = "connect" | "host";
 
-  const Item: FC<{ name: string; icon: string }> = ({ name, icon }) => {
-    const active = selected === name;
-    const styles = useSpring({
-      width: active ? 256 : 64,
-    });
+const Navigation: FC<{
+  mode: Mode;
+  onChange: (mode: Mode) => any;
+}> = ({ mode, onChange }) => {
+
+  const Item: FC<{ name: Mode; icon: string }> = ({ name, icon }) => {
+    const active = mode === name;
     return (
-      <animated.button
-        style={styles}
-        css={{
-          background: "none",
-          border: "none",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "8px",
-          padding: "0.5rem",
-          cursor: "pointer",
-          userSelect: "none",
-          margin: 0,
-          //width: active ? "200px" : "48px",
-          backgroundColor: "#696969", //active ? "#696969" : "var(--onSurface)",
-          color: "#fff", //active ? "#fff" : undefined,
-        }}
-        onClick={() => setSelected(name === selected ? "a" : "watch")}
-      >
-        <span className="material-symbols-outlined" css={{ fontSize: "32px" }}>
-          {icon}
-        </span>
-        {active && <h1>{name}</h1>}
-      </animated.button>
+      <Tooltip.Root delayDuration={300}>
+        <Tooltip.Trigger
+          css={{
+            all: "unset",
+          }}
+        >
+          <div
+            css={{
+              background: "none",
+              border: "none",
+              width: "56px",
+              height: "56px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              userSelect: "none",
+              backgroundColor: active ? "var(--secondaryContainer)" : undefined,
+              borderRadius: "28px",
+            }}
+            onClick={() => {
+              onChange(name);
+            }}
+          >
+            <span
+              className="material-symbols-outlined"
+              css={{
+                fontSize: "24px",
+                color: active
+                  ? "var(--onSecondaryContainer)"
+                  : "var(--onSurfaceVariant)",
+              }}
+            >
+              {icon}
+            </span>
+          </div>
+        </Tooltip.Trigger>
+        <Tooltip.Content
+          side="left"
+          sideOffset={6}
+          align="start"
+          alignOffset={8}
+        >
+          <m.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.25 }}
+            css={{
+              backgroundColor: active
+                ? "var(--secondaryContainer)"
+                : "var(--surfaceVariant)",
+              color: active
+                ? "var(--onSecondaryContainer)"
+                : "var(--onSurfaceVariant)",
+              margin: "0.5rem 0",
+              padding: "0.3rem 0.5rem",
+              borderRadius: "6px",
+            }}
+          >
+            {name}
+          </m.div>
+        </Tooltip.Content>
+      </Tooltip.Root>
     );
   };
 
@@ -42,13 +82,14 @@ const Navigation: FC = () => {
     <nav
       css={{
         display: "flex",
-        gap: "2rem",
-        height: "48px",
-        width: "500px",
+        flexDirection: "column",
+        gap: "12px",
+        width: "80px",
+        alignItems: "center",
       }}
     >
-      <Item name="watch" icon="visibility" />
-      {/*<Item name="host" icon="screen_share" />*/}
+      <Item name="connect" icon="screen_share" />
+      <Item name="host" icon="visibility" />
     </nav>
   );
 };

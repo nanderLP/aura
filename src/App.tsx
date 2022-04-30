@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, m } from "framer-motion";
+import Navigation from "./components/Navigation";
 
 // breakpoints, following the material you specifications
 const bp = (size: number) => `@media (min-width: ${size}px)`;
@@ -7,17 +8,22 @@ const medium = bp(600);
 const expanded = bp(840);
 
 function App() {
+  const skipIntro = sessionStorage.getItem("introPlayed") === "true";
+
   const [intro, setIntro] = useState(true);
   useEffect(() => {
-    setTimeout(() => {
-      setIntro(false);
-    }, 2000);
+    if (!skipIntro) {
+      setTimeout(() => {
+        setIntro(false);
+        sessionStorage.setItem("introPlayed", "true");
+      }, 2000);
+    }
   });
 
   return (
     <>
       <AnimatePresence>
-        {intro && (
+        {intro && !skipIntro && (
           <m.div
             css={{
               width: "100%",
@@ -27,28 +33,33 @@ function App() {
               placeItems: "center",
               userSelect: "none",
             }}
-            transition={{ duration: 0.5 }}
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -30 }}
           >
-            <h1
+            <m.h1
               className="gradient"
               css={{
                 fontSize: "8rem",
               }}
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -30 }}
+              transition={{ duration: 0.5 }}
             >
               aura
-            </h1>
+            </m.h1>
           </m.div>
         )}
       </AnimatePresence>
       <main
         css={{
+          height: "100%",
           display: "flex",
           flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
         }}
-      ></main>
+      >
+        <Navigation/>
+      </main>
     </>
   );
 }

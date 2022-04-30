@@ -9,12 +9,72 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+body,
+html,
+#💜 {
+  height: 100%;
+  width: 100%;
+}
+
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
 }
 
 /* own styles */
+
+/* m3 variables */
+:root {
+  --primary: #9c4144;
+  --onPrimary: #ffffff;
+  --primaryContainer: #ffd9d9;
+  --onPrimaryContainer: #400007;
+
+  --secondary: #835500;
+  --onSecondary: #ffffff;
+  --secondaryContainer: #ffddaf;
+  --onSecondaryContainer: #2a1800;
+
+  --error: #ba1b1b;
+  --onError: #ffffff;
+  --errorContainer: #ffdad4;
+  --onErrorContainer: #410001;
+
+  --background: #fcfcfc;
+  --onBackground: #201a1a;
+  --surface: #fcfcfc;
+  --onSurface: #201a1a;
+  --surfaceVariant: #f5dddc;
+  --onSurfaceVariant: #534343;
+  --outline: #857372;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --primary: #ffb3b3;
+    --onPrimary: #5f131a;
+    --primaryContainer: #7e2a2f;
+    --onPrimaryContainer: #ffd9d9;
+
+    --secondary: #ffb94d;
+    --onSecondary: #462b00;
+    --secondaryContainer: #633f00;
+    --onSecondaryContainer: #ffddaf;
+
+    --error: #ffb4a9;
+    --onError: #680003;
+    --errorContainer: #930006;
+    --onErrorContainer: #ffdad4;
+
+    --background: #201a1a;
+    --onBackground: #ede0df;
+    --surface: #201a1a;
+    --onSurface: #ede0df;
+    --surfaceVariant: #534343;
+    --onSurfaceVariant: #d8c2c1;
+    --outline: #9f8c8b;
+  }
+}
 
 /* custom gradient */
 .gradient {
@@ -29,6 +89,7 @@ code {
   );
   background-size: 400% 100%;
   background-clip: text;
+  -webkit-background-clip: text;
   color: transparent;
 }
 

@@ -78,6 +78,8 @@ button {
 
 button:disabled {
   cursor: default;
+  /* TODO: CHANGE THIS CHANGE THIS CHANGE THIS CHANGE THIS */
+  opacity: 0.6;
 }
 
 button[data-variant="filled"] {

@@ -31,7 +31,20 @@ const Connect: FC = () => {
         video: true,
       })
       .then((stream) => {
+        // stop all previous streams, stream instance is gonna get replaced anyway
+        localStream?.getTracks().forEach((v) => v.stop());
         setLocalStream(stream);
+        console.log(stream.getTracks()[0]);
+
+        stream.getTracks()[0].onended = () => {
+          // this works as is, but i can also change it in a way that localStream always exists and only the tracks change
+          setLocalStream(undefined);
+          setStatus({
+            color: "secondary",
+            text: "select something to stream",
+          });
+        };
+
         setStatus({
           color: "success",
           text: "stream found! enter code to connect",
@@ -76,11 +89,12 @@ const Connect: FC = () => {
         </p>
         <button
           onClick={handleMediaClick}
-          disabled={localStream !== undefined}
           data-color="secondary"
           data-variant="filled"
         >
-          <span className="label-large">connect media</span>
+          <span className="label-large">
+            {localStream === undefined ? "connect" : "change"} media
+          </span>
         </button>
       </div>
       <Separator.Root

@@ -1,4 +1,4 @@
-import { FC, MouseEventHandler, useEffect, useState } from "react";
+import { FC, MouseEventHandler, useEffect, useRef, useState } from "react";
 
 import * as Separator from "@radix-ui/react-separator";
 
@@ -20,9 +20,10 @@ const Connect: FC = () => {
   const [status, setStatus] = useState({
     color: "secondary",
     text: "select something to stream",
+    active: false,
   });
-  const [localStream, setLocalStream] = useState<MediaStream>();
-  const pc = new RTCPeerConnection(servers);
+  const localStream = useRef(new MediaStream());
+  const pc = useRef(new RTCPeerConnection(servers));
 
   const handleMediaClick: MouseEventHandler<HTMLButtonElement> = async (e) => {
     e.preventDefault();
@@ -31,36 +32,49 @@ const Connect: FC = () => {
         video: true,
       })
       .then((stream) => {
-        // stop all previous streams, stream instance is gonna get replaced anyway
-        localStream?.getTracks().forEach((v) => v.stop());
-        setLocalStream(stream);
-        console.log(stream.getTracks()[0]);
+        // stop all previous streams
+        console.log(localStream.current.getTracks());
 
-        stream.getTracks()[0].onended = () => {
-          // this works as is, but i can also change it in a way that localStream always exists and only the tracks change
-          setLocalStream(undefined);
-          setStatus({
-            color: "secondary",
-            text: "select something to stream",
-          });
-        };
+        localStream.current.getTracks().forEach((v) => {
+          console.log("STOP");
+          v.stop();
+          localStream.current.removeTrack(v);
+        });
+
+        stream.getTracks().forEach((v) => {
+          localStream.current.addTrack(v);
+          pc.current.addTrack(v, localStream.current);
+          v.onended = () => {
+            console.log("END");
+            v.stop();
+            localStream.current.removeTrack(v);
+            setStatus({
+              color: "secondary",
+              text: "select something to stream",
+              active: false,
+            });
+          };
+        });
 
         setStatus({
           color: "success",
           text: "stream found! enter code to connect",
+          active: true,
         });
       })
       .catch((e) => {
+        console.log(e);
         setStatus({
           color: "error",
           text: "error :/",
+          active: false,
         });
       });
   };
 
   const handleConnect: MouseEventHandler<HTMLButtonElement> = (e) => {
     e.preventDefault();
-    if (localStream === undefined) return;
+    if (localStream.current.getTracks() == []) return;
   };
 
   return (
@@ -107,7 +121,7 @@ const Connect: FC = () => {
       ></Separator.Root>
       <div>
         <input
-          disabled={localStream === undefined}
+          disabled={!status.active}
           placeholder="code"
           type="text"
           pattern="[0-9]*"
@@ -128,7 +142,7 @@ const Connect: FC = () => {
           }}
         />
         <button
-          disabled={localStream === undefined}
+          disabled={!status.active}
           data-variant="fab"
           data-color="primary"
           onClick={handleConnect}

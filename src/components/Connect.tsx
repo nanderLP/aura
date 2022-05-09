@@ -1,6 +1,15 @@
-import { FC, MouseEventHandler, useEffect, useRef, useState } from "react";
+import {
+  FC,
+  FormEventHandler,
+  MouseEventHandler,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 import * as Separator from "@radix-ui/react-separator";
+
+import { getFirestore, getDoc } from "firebase/firestore";
 
 // google stun servers
 // i hecking love google
@@ -72,9 +81,35 @@ const Connect: FC = () => {
       });
   };
 
-  const handleConnect: MouseEventHandler<HTMLButtonElement> = (e) => {
+  const handleConnect: FormEventHandler<HTMLFormElement> = async (e) => {
     e.preventDefault();
     if (localStream.current.getTracks() == []) return;
+    // https://stackoverflow.com/questions/29907163/how-to-work-with-form-elements-in-typescript#29907188
+    // @ts-ignore too lazy to write an interface for this
+    const code = e.target.elements.code.value;
+    console.log(code);
+
+    const db = getFirestore();
+
+    const row = supabase.from(`connections:id=eq.${code}`);
+
+    const offerQuery = await row.select("offer").single();
+    const offer = offerQuery.data as RTCSessionDescriptionInit;
+    await pc.current.setRemoteDescription(new RTCSessionDescription(offer));
+
+    const answer = await pc.current.createAnswer();
+    await pc.current.setLocalDescription(answer);
+
+    const answerQuery = await row.update({ answer }).eq("id", code).single();
+
+    console.log(answerQuery);
+
+    row
+      .on("UPDATE", (payload) => {
+        console.log("PAYLOAD", payload);
+        const offerCandidates = payload.new["offerCandidates"];
+      })
+      .subscribe();
   };
 
   return (
@@ -119,10 +154,11 @@ const Connect: FC = () => {
           margin: "1rem 0",
         }}
       ></Separator.Root>
-      <div>
+      <form onSubmit={handleConnect}>
         <input
           disabled={!status.active}
           placeholder="code"
+          name="code"
           type="text"
           pattern="[0-9]*"
           inputMode="numeric"
@@ -145,11 +181,11 @@ const Connect: FC = () => {
           disabled={!status.active}
           data-variant="fab"
           data-color="primary"
-          onClick={handleConnect}
+          type="submit"
         >
           <span className="label-large">connect with code</span>
         </button>
-      </div>
+      </form>
     </div>
   );
 };

@@ -1,5 +1,5 @@
 import { FC } from "react";
-import supabase from "../lib/supabase";
+import supabase from "../lib/database";
 
 const Host: FC = () => {
   

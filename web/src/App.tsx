@@ -67,7 +67,7 @@ function App() {
         <m.div
           initial={{ opacity: skipIntro ? 1 : 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.5, duration: 0.5 }}
+          transition={{ delay: 1, duration: 0.5 }}
           css={{
             height: "100%",
             display: "flex",

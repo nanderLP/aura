@@ -10,17 +10,7 @@ import {
 import * as Separator from "@radix-ui/react-separator";
 
 import { getFirestore, getDoc } from "firebase/firestore";
-
-// google stun servers
-// i hecking love google
-const servers = {
-  iceServers: [
-    {
-      urls: ["stun:stun1.l.google.com:19302", "stun:stun2.l.google.com:19302"],
-    },
-  ],
-  iceCandidatePoolSize: 10,
-};
+import servers from "../lib/stun";
 
 // The connect component creates a code
 // other users can use the host component to connect to a host
@@ -31,8 +21,8 @@ const Connect: FC = () => {
     text: "select something to stream",
     active: false,
   });
-  const localStream = useRef(new MediaStream());
-  const pc = useRef(new RTCPeerConnection(servers));
+  const { current: localStream } = useRef(new MediaStream());
+  const { current: pc } = useRef(new RTCPeerConnection(servers));
 
   const handleMediaClick: MouseEventHandler<HTMLButtonElement> = async (e) => {
     e.preventDefault();
@@ -42,21 +32,21 @@ const Connect: FC = () => {
       })
       .then((stream) => {
         // stop all previous streams
-        console.log(localStream.current.getTracks());
+        console.log(localStream.getTracks());
 
-        localStream.current.getTracks().forEach((v) => {
+        localStream.getTracks().forEach((v) => {
           console.log("STOP");
           v.stop();
-          localStream.current.removeTrack(v);
+          localStream.removeTrack(v);
         });
 
         stream.getTracks().forEach((v) => {
-          localStream.current.addTrack(v);
-          pc.current.addTrack(v, localStream.current);
+          localStream.addTrack(v);
+          pc.addTrack(v, localStream);
           v.onended = () => {
             console.log("END");
             v.stop();
-            localStream.current.removeTrack(v);
+            localStream.removeTrack(v);
             setStatus({
               color: "secondary",
               text: "select something to stream",
@@ -83,13 +73,11 @@ const Connect: FC = () => {
 
   const handleConnect: FormEventHandler<HTMLFormElement> = async (e) => {
     e.preventDefault();
-    if (localStream.current.getTracks() == []) return;
+    if (localStream.getTracks() == []) return;
     // https://stackoverflow.com/questions/29907163/how-to-work-with-form-elements-in-typescript#29907188
     // @ts-ignore too lazy to write an interface for this
     const code = e.target.elements.code.value;
     console.log(code);
-
-    
   };
 
   return (

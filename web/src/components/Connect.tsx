@@ -89,27 +89,7 @@ const Connect: FC = () => {
     const code = e.target.elements.code.value;
     console.log(code);
 
-    const db = getFirestore();
-
-    const row = supabase.from(`connections:id=eq.${code}`);
-
-    const offerQuery = await row.select("offer").single();
-    const offer = offerQuery.data as RTCSessionDescriptionInit;
-    await pc.current.setRemoteDescription(new RTCSessionDescription(offer));
-
-    const answer = await pc.current.createAnswer();
-    await pc.current.setLocalDescription(answer);
-
-    const answerQuery = await row.update({ answer }).eq("id", code).single();
-
-    console.log(answerQuery);
-
-    row
-      .on("UPDATE", (payload) => {
-        console.log("PAYLOAD", payload);
-        const offerCandidates = payload.new["offerCandidates"];
-      })
-      .subscribe();
+    
   };
 
   return (
@@ -154,38 +134,6 @@ const Connect: FC = () => {
           margin: "1rem 0",
         }}
       ></Separator.Root>
-      <form onSubmit={handleConnect}>
-        <input
-          disabled={!status.active}
-          placeholder="code"
-          name="code"
-          type="text"
-          pattern="[0-9]*"
-          inputMode="numeric"
-          maxLength={4}
-          size={4}
-          css={{
-            display: "block",
-            marginBottom: "1rem",
-            border: "solid 1px var(--outline)",
-            height: "48px",
-            borderRadius: "4px",
-            padding: "0 0.5rem",
-            textAlign: "center",
-            ":placeholder": {
-              color: "var(--onSurfaceVariant)",
-            },
-          }}
-        />
-        <button
-          disabled={!status.active}
-          data-variant="fab"
-          data-color="primary"
-          type="submit"
-        >
-          <span className="label-large">connect with code</span>
-        </button>
-      </form>
     </div>
   );
 };

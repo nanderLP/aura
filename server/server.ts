@@ -50,7 +50,7 @@ class Room {
     client.socket.onopen = () => {
       client.socket.send(
         JSON.stringify({
-          type: "connect",
+          type: "init",
           clients: this.clients.filter((c) => c.id !== client.id),
           me: {
             id: client.id,
@@ -79,9 +79,59 @@ class Room {
 
   onMessage(client: Client, message: MessageEvent) {
     // TODO: maybe heartbeat, disconnect event, mode changing and message relaying
-  }
+    const data = JSON.parse(message.data);
+    const payload = data.payload;
+    try {
+      switch (data.type) {
+        case "message": {
+          const recipient = this.clients.find((c) => c.id === data.to);
+          if (!recipient) throw new Error("recipient not found");
+          recipient.socket.send(
+            JSON.stringify({
+              type: "message",
+              from: client.id,
+              payload,
+            }),
+          );
+          break;
+        }
+        case "mode": {
+          const newMode = payload.mode;
+          if (newMode !== "host" && newMode !== "connect") {
+            throw new Error("invalid mode");
+          }
+          // identical mode, don't do anything
+          if(newMode === client.mode) return;
+          // notify all clients
+          this.clients.forEach((c) => {
+            // don't notify yourself
+            if (c.id == client.id) return;
 
-  /* changeMode(client: Client, mode: string) {
+            c.socket.send(
+              JSON.stringify({
+                type: "mode",
+                client: { id: client.id, mode: newMode },
+              }),
+            );
+          });
+          client.mode = newMode;
+          break;
+        }
+        case "disconnect": {
+          // calls onclose event, which does the rest
+          client.socket.close();
+          break;
+        }
+      }
+    } catch (e) {
+      client.socket.send(
+        JSON.stringify({ type: "error", message: e.message }),
+      );
+    }
+  }
+}
+
+/* changeMode(client: Client, mode: string) {
     // notify all clients
     this.clients.forEach((c) => {
       c.socket.send(
@@ -90,7 +140,6 @@ class Room {
     });
     client.mode = mode;
   }*/
-}
 
 // key is ip, this will not work with ipv6 (don't know if that's possible)
 const rooms = new Map<string, Room>();

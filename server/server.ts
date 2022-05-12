@@ -23,6 +23,15 @@ class Client {
       socket.send("remoteAddr: "+ip + " x-forwarded-for: "+req.headers.get("X-Forwarded-For"));
       */
   }
+
+  /**
+   * removes sensitive information from the client object, used for sending to other clients
+   * @returns a parsable representation of the client
+   */
+  sanitize = () => ({
+    id: this.id,
+    mode: this.mode,
+  });
 }
 
 class Room {
@@ -43,7 +52,7 @@ class Room {
       c.socket.send(
         JSON.stringify({
           type: "join",
-          client: { id: client.id, mode: client.mode },
+          payload: client.sanitize(),
         }),
       );
     });
@@ -51,12 +60,15 @@ class Room {
       client.socket.send(
         JSON.stringify({
           type: "init",
-          clients: this.clients.filter((c) => c.id !== client.id),
-          me: {
-            id: client.id,
-            mode: client.mode,
+          payload: {
+            clients: this.clients.filter((c) => c.id !== client.id).map((
+              c,
+            ) => {
+              return c.sanitize();
+            }),
+            me: client.sanitize(),
+            code: this.code,
           },
-          code: this.code,
         }),
       );
     };
@@ -72,7 +84,7 @@ class Room {
     // notify all clients
     this.clients.forEach((c) => {
       c.socket.send(
-        JSON.stringify({ type: "leave", client: { id: client.id } }),
+        JSON.stringify({ type: "leave", payload: { id: client.id } }),
       );
     });
   }
@@ -101,7 +113,10 @@ class Room {
             throw new Error("invalid mode");
           }
           // identical mode, don't do anything
-          if(newMode === client.mode) return;
+          if (newMode === client.mode) return;
+
+          client.mode = newMode;
+
           // notify all clients
           this.clients.forEach((c) => {
             // don't notify yourself
@@ -110,11 +125,10 @@ class Room {
             c.socket.send(
               JSON.stringify({
                 type: "mode",
-                client: { id: client.id, mode: newMode },
+                payload: client.sanitize(),
               }),
             );
           });
-          client.mode = newMode;
           break;
         }
         case "disconnect": {
@@ -125,7 +139,7 @@ class Room {
       }
     } catch (e) {
       client.socket.send(
-        JSON.stringify({ type: "error", message: e.message }),
+        JSON.stringify({ type: "error", payload: { message: e.message } }),
       );
     }
   }

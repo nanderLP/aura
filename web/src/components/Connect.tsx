@@ -11,6 +11,7 @@ import * as Separator from "@radix-ui/react-separator";
 
 import { getFirestore, getDoc } from "firebase/firestore";
 import servers from "../lib/stun";
+import useStore from "../lib/store";
 
 // The connect component creates a code
 // other users can use the host component to connect to a host
@@ -23,6 +24,9 @@ const Connect: FC = () => {
   });
   const { current: localStream } = useRef(new MediaStream());
   const { current: pc } = useRef(new RTCPeerConnection(servers));
+
+  // connected hosts
+  const clients = useStore((state) => state.clients);
 
   const handleMediaClick: MouseEventHandler<HTMLButtonElement> = async (e) => {
     e.preventDefault();
@@ -122,6 +126,13 @@ const Connect: FC = () => {
           margin: "1rem 0",
         }}
       ></Separator.Root>
+      <div>
+        {clients
+          .filter((c) => c.mode === "host")
+          .map((c, i) => (
+            <div key={i}>{c.id}</div>
+          ))}
+      </div>
     </div>
   );
 };

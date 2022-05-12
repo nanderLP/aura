@@ -1,13 +1,13 @@
 import { FC, useEffect, useState } from "react";
 import { m } from "framer-motion";
 import * as Tooltip from "@radix-ui/react-tooltip";
+import useStore from "../lib/store";
 
 type Mode = "connect" | "host";
 
-const Navigation: FC<{
-  mode: Mode;
-  onChange: (mode: Mode) => any;
-}> = ({ mode, onChange }) => {
+const Navigation: FC = () => {
+  const mode = useStore((state) => state.mode);
+  const setMode = useStore((state) => state.setMode);
 
   const Item: FC<{ name: Mode; icon: string }> = ({ name, icon }) => {
     const active = mode === name;
@@ -33,7 +33,7 @@ const Navigation: FC<{
               borderRadius: "28px",
             }}
             onClick={() => {
-              onChange(name);
+              setMode(name);
             }}
           >
             <span

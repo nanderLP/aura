@@ -1,11 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useReducer, useRef, useState } from "react";
 import { AnimatePresence, m } from "framer-motion";
 import Navigation from "./components/Navigation";
 import Host from "./components/Host";
 import Connect from "./components/Connect";
 
+import useTilg from "tilg";
+
 // init firebase
 import "./lib/firebase";
+import useSocket from "./lib/store";
 
 // breakpoints, following the material you specifications
 const bp = (size: number) => `@media (min-width: ${size}px)`;
@@ -27,12 +30,47 @@ function App() {
     }
   });
 
+  // I'd like to use tilg but the strict-mode double render feature makes it kinda annoying to look at
+  // useTilg()`mode = ${mode}, intro = ${intro}`;
+
+  /* reworked in socket.ts
+  connect to backend
+  const ws = useRef<WebSocket>();
+  useEffect(() => {
+    ws.current = new WebSocket("ws://localhost:8000?mode=" + defaultMode);
+    ws.current.addEventListener("open", (e) => {
+      console.log("CONNECTED", e);
+    });
+    ws.current.addEventListener("close", (e) => {
+      console.log("DISCONNECTED", e);
+    });
+    ws.current.addEventListener("error", (e) => {
+      console.log("ERROR", e);
+    });
+
+    return () => ws.current?.close();
+  }, []);
+
   // mode handling
-  const [mode, setMode] = useState<"connect" | "host">("connect");
+  const defaultMode = "connect";
+  const [mode, setMode] = useState(defaultMode);
+
+  // code
+  const broadcastMode = (mode: string) => {
+    ws.current?.send(JSON.stringify({ type: "mode", payload: { mode } }));
+  };
 
   useEffect(() => {
-    console.log(mode);
+    broadcastMode(mode);
   }, [mode]);
+  */
+
+  const connected = useSocket((state) => state.connected);
+  const mode = useSocket((state) => state.mode);
+
+  useEffect(() => {
+    console.log("connected", connected);
+  }, [connected]);
 
   return (
     <>
@@ -76,7 +114,7 @@ function App() {
             gap: "1rem",
           }}
         >
-          <Navigation mode={mode} onChange={setMode} />
+          <Navigation />
           <main
             css={{
               width: "100%",
@@ -85,7 +123,11 @@ function App() {
               },
             }}
           >
-            {mode === "host" ? <Host /> : <Connect />}
+            {mode === "host" ? (
+              <Host />
+            ) : (
+              <Connect />
+            )}
           </main>
         </m.div>
       )}

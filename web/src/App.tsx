@@ -9,6 +9,7 @@ import useTilg from "tilg";
 // init firebase
 import "./lib/firebase";
 import useSocket from "./lib/store";
+import Intro from "./components/Intro";
 
 // breakpoints, following the material you specifications
 const bp = (size: number) => `@media (min-width: ${size}px)`;
@@ -18,7 +19,7 @@ const expanded = bp(840);
 function App() {
   // intro handling
 
-  const skipIntro = sessionStorage.getItem("introPlayed") === "true";
+  const skipIntro = false //sessionStorage.getItem("introPlayed") === "true";
 
   const [intro, setIntro] = useState(!skipIntro);
   useEffect(() => {
@@ -74,33 +75,7 @@ function App() {
 
   return (
     <>
-      <AnimatePresence>
-        {intro && (
-          <m.div
-            css={{
-              width: "100%",
-              height: "100%",
-              position: "absolute",
-              display: "grid",
-              placeItems: "center",
-              userSelect: "none",
-            }}
-          >
-            <m.h1
-              className="gradient"
-              css={{
-                fontSize: "8rem",
-              }}
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -30 }}
-              transition={{ duration: 0.5 }}
-            >
-              aura
-            </m.h1>
-          </m.div>
-        )}
-      </AnimatePresence>
+      <Intro active={intro}/>
       {!intro && (
         <m.div
           initial={{ opacity: skipIntro ? 1 : 0 }}
@@ -123,11 +98,7 @@ function App() {
               },
             }}
           >
-            {mode === "host" ? (
-              <Host />
-            ) : (
-              <Connect />
-            )}
+            {mode === "host" ? <Host /> : <Connect />}
           </main>
         </m.div>
       )}

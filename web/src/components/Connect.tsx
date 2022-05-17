@@ -12,12 +12,18 @@ import * as Separator from "@radix-ui/react-separator";
 import { getFirestore, getDoc } from "firebase/firestore";
 import servers from "../lib/stun";
 import useStore from "../lib/store";
+import Button from "./primitives/Button";
+import { styled } from "../styles/stitches.config";
 
 // The connect component creates a code
 // other users can use the host component to connect to a host
 // with their screen rtc stream
 const Connect: FC = () => {
-  const [status, setStatus] = useState({
+  const [status, setStatus] = useState<{
+    color: "secondary" | "error" | "success";
+    text: string;
+    active: boolean;
+  }>({
     color: "secondary",
     text: "select something to stream",
     active: false,
@@ -61,7 +67,7 @@ const Connect: FC = () => {
 
         setStatus({
           color: "success",
-          text: "stream found! enter code to connect",
+          text: "stream found! select a host to connect to.",
           active: true,
         });
       })
@@ -84,6 +90,43 @@ const Connect: FC = () => {
     console.log(code);
   };
 
+  const Status = styled("span", {
+    "&:before": {
+      content: "' '",
+      display: "inline-block",
+      width: "10px",
+      height: "10px",
+      marginRight: "10px",
+      borderRadius: "100%",
+    },
+    variants: {
+      status: {
+        secondary: {
+          "&:before": {
+            backgroundColor: "$secondary",
+          },
+        },
+        success: {
+          "&:before": {
+            backgroundColor: "$success",
+          },
+        },
+        error: {
+          "&:before": {
+            backgroundColor: "$error",
+          },
+        },
+      },
+    },
+  });
+
+  const StyledSeparator = styled(Separator.Root, {
+    height: 2,
+    width: "100%",
+    backgroundColor: "$outline",
+    margin: "1rem 0",
+  });
+
   return (
     <div>
       <div>
@@ -92,40 +135,14 @@ const Connect: FC = () => {
             marginBottom: "0.5rem",
           }}
         >
-          <span
-            id="status"
-            css={{
-              "&:before": {
-                content: "' '",
-                display: "inline-block",
-                width: "10px",
-                height: "10px",
-                marginRight: "10px",
-                borderRadius: "100%",
-                backgroundColor: `var(--${status.color})`,
-              },
-            }}
-          />
+          <Status status={status.color} />
           <span className="label-large">{status.text}</span>
         </p>
-        <button
-          onClick={handleMediaClick}
-          data-color="secondary"
-          data-variant="filled"
-        >
-          <span className="label-large">
-            {localStream === undefined ? "connect" : "change"} media
-          </span>
-        </button>
+        <Button onClick={handleMediaClick} color="secondary" variant="filled">
+          {localStream === undefined ? "connect" : "change"} media
+        </Button>
       </div>
-      <Separator.Root
-        css={{
-          height: 2,
-          width: "100%",
-          backgroundColor: "var(--outline)",
-          margin: "1rem 0",
-        }}
-      ></Separator.Root>
+      <StyledSeparator orientation="horizontal"/>
       <div>
         {clients
           .filter((c) => c.mode === "host")

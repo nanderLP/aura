@@ -8,7 +8,7 @@ import useTilg from "tilg";
 
 // init firebase
 import "./lib/firebase";
-import useSocket from "./lib/store";
+import useStore from "./lib/store";
 import Intro from "./components/Intro";
 
 // breakpoints, following the material you specifications
@@ -19,7 +19,7 @@ const expanded = bp(840);
 function App() {
   // intro handling
 
-  const skipIntro = false //sessionStorage.getItem("introPlayed") === "true";
+  const skipIntro = sessionStorage.getItem("introPlayed") === "true";
 
   const [intro, setIntro] = useState(!skipIntro);
   useEffect(() => {
@@ -66,8 +66,9 @@ function App() {
   }, [mode]);
   */
 
-  const connected = useSocket((state) => state.connected);
-  const mode = useSocket((state) => state.mode);
+  const connected = useStore((state) => state.connected);
+  const mode = useStore((state) => state.mode);
+  const s = useStore((state) => state.localStream);
 
   useEffect(() => {
     console.log("connected", connected);
@@ -75,7 +76,7 @@ function App() {
 
   return (
     <>
-      <Intro active={intro}/>
+      <Intro active={intro} />
       {!intro && (
         <m.div
           initial={{ opacity: skipIntro ? 1 : 0 }}

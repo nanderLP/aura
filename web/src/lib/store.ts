@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import create from "zustand";
 import { combine } from "zustand/middleware";
+import servers from "./stun";
 
 /**
  * the current mode of the client
@@ -13,6 +14,10 @@ interface Client {
    */
   id: string;
   mode: Mode;
+  /**
+   * human-readable name, based on the moby name generation
+   */
+  name: string;
   /**
    * object for storing important data for establishing a webrtc connection between two clients
    */
@@ -36,7 +41,21 @@ interface State {
    * information about yourself in the room-context
    */
   me: Me;
+  /**
+   * class that manages p2p connections through webrtc, hopefully works
+   */
+  pc: RTCPeerConnection;
+  /**
+   * class that manages the local screen stream
+   */
+  localStream: MediaStream;
+  /**
+   * class that manages the remote screen stream
+   */
+  remoteStream: MediaStream;
+
   mode: Mode;
+
   /**
    * 4 digit code, used to identify the room and may be used for cross-wifi connection
    */
@@ -52,6 +71,9 @@ const defaultMode: Mode = "connect";
 const initialState: State = {
   clients: [],
   me: {},
+  pc: new RTCPeerConnection(servers),
+  localStream: new MediaStream(),
+  remoteStream: new MediaStream(),
   code: undefined,
   mode: defaultMode,
   connected: false,
@@ -88,6 +110,7 @@ const useStore = create(combine(initialState, (set, get) => {
         case "mode": {
           // this is probably obsolete but i'll keep using it for debugging purposes
           const clientFound = get().clients.find((c) => c.id === payload.id);
+
           if (!clientFound) {
             throw new Error("client not found, that should not happen");
           }
@@ -144,12 +167,25 @@ const useStore = create(combine(initialState, (set, get) => {
   return {
     setMode(mode: Mode) {
       console.log("SETMODE", mode);
+
+      // reset streams
+      const l = get().localStream;
+      const r = get().remoteStream;
+      l.getTracks().forEach((t) => t.stop());
+      r.getTracks().forEach((t) => t.stop());
+
       // broadcast mode change
       ws.send(JSON.stringify({ type: "mode", payload: { mode } }));
       set((state) => ({
         ...state,
         mode,
       }));
+    },
+    connectToHost(id: string) {
+      console.log("CONNECT TO HOST", id);
+      ws.send(JSON.stringify({ type: "message", to: id, payload: {
+        type: "offer"
+      } }));
     },
   };
 }));

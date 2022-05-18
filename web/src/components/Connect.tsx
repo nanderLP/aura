@@ -9,8 +9,6 @@ import {
 
 import * as Separator from "@radix-ui/react-separator";
 
-import { getFirestore, getDoc } from "firebase/firestore";
-import servers from "../lib/stun";
 import useStore from "../lib/store";
 import Button from "./primitives/Button";
 import { styled } from "../styles/stitches.config";
@@ -28,8 +26,10 @@ const Connect: FC = () => {
     text: "select something to stream",
     active: false,
   });
-  const { current: localStream } = useRef(new MediaStream());
-  const { current: pc } = useRef(new RTCPeerConnection(servers));
+  const localStream = useStore((state) => state.localStream);
+  const pc = useStore((state) => state.pc);
+
+  const connect = useStore((state) => state.connectToHost);
 
   // connected hosts
   const clients = useStore((state) => state.clients);
@@ -84,10 +84,7 @@ const Connect: FC = () => {
   const handleConnect: FormEventHandler<HTMLFormElement> = async (e) => {
     e.preventDefault();
     if (localStream.getTracks() == []) return;
-    // https://stackoverflow.com/questions/29907163/how-to-work-with-form-elements-in-typescript#29907188
-    // @ts-ignore too lazy to write an interface for this
-    const code = e.target.elements.code.value;
-    console.log(code);
+    
   };
 
   const Status = styled("span", {
@@ -142,12 +139,12 @@ const Connect: FC = () => {
           {localStream === undefined ? "connect" : "change"} media
         </Button>
       </div>
-      <StyledSeparator orientation="horizontal"/>
+      <StyledSeparator orientation="horizontal" />
       <div>
         {clients
           .filter((c) => c.mode === "host")
           .map((c, i) => (
-            <div key={i}>{c.id}</div>
+            <div key={i}>{c.name}</div>
           ))}
       </div>
     </div>

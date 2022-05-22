@@ -51,7 +51,6 @@ const Navigation: FC = () => {
     */
 
     const StyledContent = styled(TooltipContent, {
-
       variants: {
         active: {
           true: {
@@ -60,6 +59,20 @@ const Navigation: FC = () => {
           },
           false: {
             backgroundColor: "$surfaceVariant",
+            color: "$onSurfaceVariant",
+          },
+        },
+      },
+    });
+
+    const IconWrapper = styled("span", {
+      fontSize: "24px",
+      variants: {
+        active: {
+          true: {
+            color: "$onSecondaryContainer",
+          },
+          false: {
             color: "$onSurfaceVariant",
           },
         },
@@ -75,19 +88,17 @@ const Navigation: FC = () => {
             setMode(name);
           }}
         >
-          <span
-            className="material-symbols-outlined"
-            css={{
-              fontSize: "24px",
-              color: active
-                ? "var(--onSecondaryContainer)"
-                : "var(--onSurfaceVariant)",
-            }}
-          >
+          <IconWrapper className="material-symbols-outlined" active={active}>
             {icon}
-          </span>
+          </IconWrapper>
         </StyledTrigger>
-        <StyledContent active={active} side="left" sideOffset={6} align="center" alignOffset={8}>
+        <StyledContent
+          active={active}
+          side="left"
+          sideOffset={6}
+          align="center"
+          alignOffset={8}
+        >
           <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

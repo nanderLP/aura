@@ -10,11 +10,8 @@ import useTilg from "tilg";
 import "./lib/firebase";
 import useStore from "./lib/store";
 import Intro from "./components/Intro";
-
-// breakpoints, following the material you specifications
-const bp = (size: number) => `@media (min-width: ${size}px)`;
-const medium = bp(600);
-const expanded = bp(840);
+import { styled } from "./styles/stitches.config";
+import StatusWidget from "./components/StatusWidget";
 
 function App() {
   // intro handling
@@ -74,34 +71,36 @@ function App() {
     console.log("connected", connected);
   }, [connected]);
 
+  const Container = styled(m.div, {
+    height: "100%",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: "1rem",
+  });
+
+  const ContentWrapper = styled("main", {
+    width: "100%",
+    "@medium": {
+      width: "384px",
+    },
+  });
+
   return (
     <>
       <Intro active={intro} />
+      <StatusWidget />
       {!intro && (
-        <m.div
+        <Container
           initial={{ opacity: skipIntro ? 1 : 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1, duration: 0.5 }}
-          css={{
-            height: "100%",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            gap: "1rem",
-          }}
         >
           <Navigation />
-          <main
-            css={{
-              width: "100%",
-              [medium]: {
-                width: "384px",
-              },
-            }}
-          >
+          <ContentWrapper>
             {mode === "host" ? <Host /> : <Connect />}
-          </main>
-        </m.div>
+          </ContentWrapper>
+        </Container>
       )}
     </>
   );

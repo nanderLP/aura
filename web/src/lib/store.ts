@@ -27,9 +27,9 @@ interface Client {
 }
 
 // the init event sends a me object with information about yourself
-// currently it only sends the id and mode, and because the mode is saved somewhere else, we only save the id
 interface Me {
   id?: string;
+  name?: string;
 }
 
 interface State {

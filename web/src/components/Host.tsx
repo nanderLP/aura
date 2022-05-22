@@ -1,4 +1,5 @@
 import { FC, useRef } from "react";
+import useStore from "../lib/store";
 import servers from "../lib/stun";
 
 const Host: FC = () => {
@@ -10,7 +11,13 @@ const Host: FC = () => {
     });
   };
 
-  return <div></div>;
+  const me = useStore((state) => state.me);
+
+  return (
+    <div>
+      People will see you as <b>{me.name}</b>
+    </div>
+  );
 };
 
 export default Host;

@@ -84,7 +84,6 @@ const Connect: FC = () => {
   const handleConnect: FormEventHandler<HTMLFormElement> = async (e) => {
     e.preventDefault();
     if (localStream.getTracks() == []) return;
-    
   };
 
   const Status = styled("span", {
@@ -121,14 +120,14 @@ const Connect: FC = () => {
     height: 2,
     width: "100%",
     backgroundColor: "$outline",
-    margin: "1rem 0",
+    margin: "1rem 0rem",
   });
 
   return (
     <div>
       <div>
         <p
-          css={{
+          style={{
             marginBottom: "0.5rem",
           }}
         >

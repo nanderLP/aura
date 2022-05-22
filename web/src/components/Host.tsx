@@ -1,21 +1,29 @@
-import { FC, useRef } from "react";
+import { FC, useEffect, useRef } from "react";
 import useStore from "../lib/store";
 import servers from "../lib/stun";
+import { styled } from "../styles/stitches.config";
 
 const Host: FC = () => {
-  const { current: pc } = useRef(new RTCPeerConnection(servers));
-  const { current: remoteStream } = useRef(new MediaStream());
-  pc.ontrack = (event) => {
-    event.streams[0].getTracks().forEach((track) => {
-      remoteStream.addTrack(track);
-    });
-  };
-
   const me = useStore((state) => state.me);
+  const remoteStream = useStore((state) => state.remoteStream);
+
+  const vidRef = useRef<HTMLVideoElement>();
+
+  useEffect(() => {
+    if (remoteStream && vidRef.current) {
+      vidRef.current.srcObject = remoteStream;
+    }
+  });
+
+  const Video = styled("video", {
+    aspectRatio: "16:9",
+    width: "1000px",
+  });
 
   return (
     <div>
       People will see you as <b>{me.name}</b>
+      <Video autoPlay playsInline ref={vidRef}></Video>
     </div>
   );
 };

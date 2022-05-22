@@ -81,11 +81,6 @@ const Connect: FC = () => {
       });
   };
 
-  const handleConnect: FormEventHandler<HTMLFormElement> = async (e) => {
-    e.preventDefault();
-    if (localStream.getTracks() == []) return;
-  };
-
   const Status = styled("span", {
     "&:before": {
       content: "' '",
@@ -123,6 +118,8 @@ const Connect: FC = () => {
     margin: "1rem 0rem",
   });
 
+  const ClientContainer = styled("div", {});
+
   return (
     <div>
       <div>
@@ -143,7 +140,10 @@ const Connect: FC = () => {
         {clients
           .filter((c) => c.mode === "host")
           .map((c, i) => (
-            <div key={i}>{c.name}</div>
+            <div key={i}>
+              <p>{c.name}</p>
+              <Button onClick={() => connect(c.id)}>connect</Button>
+            </div>
           ))}
       </div>
     </div>

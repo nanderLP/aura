@@ -9,6 +9,7 @@ const StatusWidget = () => {
     width: "100%",
   });
 
+  /*
   const gradient = keyframes({
     "0%": {
       backgroundPosition: "15% 0%",
@@ -43,6 +44,7 @@ const StatusWidget = () => {
         "polygon(0% 100%, 3px 100%, 3px 100%, 3px 100%, 3px 100%, 3px 100%, 3px 100%, 3px 100%, 3px 100%, 0% 100%)",
     },
   });
+  */
 
   const Content = styled("div", {
     boxSizing: "border-box",
@@ -61,6 +63,10 @@ const StatusWidget = () => {
       marginRight: "1rem",
     },
 
+    /*
+    // ditching this, because it doesn't fit in the UX
+    // Johnny Fekete idk who you are but thank you for this amazing animation
+    // https://codepen.io/johnnyfekete/pen/WMoWvb
     variants: {
       connected: {
         true: {
@@ -80,14 +86,14 @@ const StatusWidget = () => {
               "polygon(0% 100%, 3px 100%, 3px 3px, calc(100% - 3px) 3px, calc(100% - 3px) calc(100% - 3px), 3px calc(100% - 3px), 3px 100%, 100% 100%, 100% 0%, 0% 0%)",
           },
         },
-        // Johnny Fekete idk who you are but thank you for this amazing animation
-        // https://codepen.io/johnnyfekete/pen/WMoWvb
+
       },
     },
+    */
   });
   return (
     <Container>
-      <Content connected={connected}>
+      <Content>
         <p>status: {connected ? "connected" : "not connected"}</p>
         <p>clients: {clients.length + 1}</p>
       </Content>

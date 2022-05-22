@@ -111,19 +111,19 @@ const Navigation: FC = () => {
     );
   };
 
+  const Container = styled("nav", {
+    display: "flex",
+    flexDirection: "column",
+    gap: 12,
+    width: 80,
+    alignItems: "center",
+  });
+
   return (
-    <nav
-      css={{
-        display: "flex",
-        flexDirection: "column",
-        gap: "12px",
-        width: "80px",
-        alignItems: "center",
-      }}
-    >
+    <Container>
       <Item name="connect" icon="screen_share" />
       <Item name="host" icon="visibility" />
-    </nav>
+    </Container>
   );
 };
 

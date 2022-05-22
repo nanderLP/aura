@@ -37,18 +37,30 @@ interface State {
    * the clients in the room
    */
   clients: Client[];
+
   /**
    * information about yourself in the room-context
    */
   me: Me;
+
   /**
    * class that manages p2p connections through webrtc, hopefully works
+   * ignored, i have to add pc in the 2nd combine object, because i have to add listeners to it
+   *
+   * pc: RTCPeerConnection;
    */
-  pc: RTCPeerConnection;
+
+  /**
+   * id of the peer that you are connected to / trying to connect to
+   * used for ice messages
+   */
+  connection?: string;
+
   /**
    * class that manages the local screen stream
    */
   localStream: MediaStream;
+
   /**
    * class that manages the remote screen stream
    */
@@ -60,6 +72,7 @@ interface State {
    * 4 digit code, used to identify the room and may be used for cross-wifi connection
    */
   code?: string;
+
   /**
    * specifies if you are connected to a room
    */
@@ -71,7 +84,8 @@ const defaultMode: Mode = "connect";
 const initialState: State = {
   clients: [],
   me: {},
-  pc: new RTCPeerConnection(servers),
+  //pc: new RTCPeerConnection(servers),
+  connection: undefined,
   localStream: new MediaStream(),
   remoteStream: new MediaStream(),
   code: undefined,
@@ -80,6 +94,34 @@ const initialState: State = {
 };
 
 const useStore = create(combine(initialState, (set, get) => {
+  const pc = new RTCPeerConnection(servers);
+
+  pc.ontrack = (event) => {
+    console.log("PC TRACK");
+
+    event.streams[0].getTracks().forEach((track) => {
+      console.log(track);
+
+      get().remoteStream.addTrack(track);
+    });
+  };
+
+  pc.onicecandidate = (event) => {
+    const connectionCandidate = get().connection;
+    if (event.candidate && connectionCandidate) {
+      console.log("ICE");
+      ws.send(JSON.stringify({
+        type: "message",
+        to: connectionCandidate,
+        payload: {
+          type: "ice",
+          ice: event.candidate,
+        },
+      }));
+    }
+  };
+
+  // websocket stuff
   const ws = new WebSocket("ws://localhost:8000?mode=" + defaultMode);
 
   ws.onopen = (e) => {
@@ -96,7 +138,7 @@ const useStore = create(combine(initialState, (set, get) => {
     console.log("ERROR", e);
   };
 
-  ws.onmessage = (e) => {
+  ws.onmessage = async (e) => {
     const { payload, ...data } = JSON.parse(e.data);
 
     console.log("MESSAGE", data, payload);
@@ -105,6 +147,41 @@ const useStore = create(combine(initialState, (set, get) => {
       switch (data.type) {
         case "message": {
           // use message
+          const { from } = data;
+          const { type } = payload;
+          switch (type) {
+            case "offer": {
+              // handle offer, start of connection
+              set({ connection: from });
+
+              const offer = new RTCSessionDescription(payload.offer);
+              await pc.setRemoteDescription(offer);
+
+              const answer = await pc.createAnswer();
+              await pc.setLocalDescription(answer);
+
+              ws.send(JSON.stringify({
+                type: "message",
+                to: from,
+                payload: {
+                  type: "answer",
+                  answer: {
+                    type: answer.type,
+                    sdp: answer.sdp,
+                  },
+                },
+              }));
+              break;
+            }
+            case "answer": {
+              const answer = new RTCSessionDescription(payload.answer);
+              await pc.setRemoteDescription(answer);
+            }
+            case "ice": {
+              const candidate = new RTCIceCandidate(payload.ice);
+              await pc.addIceCandidate(candidate);
+            }
+          }
           break;
         }
         case "mode": {
@@ -124,16 +201,14 @@ const useStore = create(combine(initialState, (set, get) => {
 
           // replace client in array
           // dunno if i can make this more efficient
-          set((state) => ({
-            ...state,
+          set({
             clients: modifiedClients,
-          }));
+          });
           break;
         }
         case "join": {
           const client = payload as Client;
           set((state) => ({
-            ...state,
             clients: [...state.clients, client],
           }));
           break;
@@ -141,7 +216,6 @@ const useStore = create(combine(initialState, (set, get) => {
         case "leave": {
           const leaverId = payload.id;
           set((state) => ({
-            ...state,
             clients: state.clients.filter((c) => c.id !== leaverId),
           }));
           break;
@@ -149,12 +223,11 @@ const useStore = create(combine(initialState, (set, get) => {
         case "init": {
           // save all the stuff we get (clients)
           const { clients, me, code } = payload;
-          set((state) => ({
-            ...state,
+          set({
             clients,
             me,
             code,
-          }));
+          });
           break;
         }
       }
@@ -165,6 +238,7 @@ const useStore = create(combine(initialState, (set, get) => {
   };
 
   return {
+    pc,
     setMode(mode: Mode) {
       console.log("SETMODE", mode);
 
@@ -176,16 +250,26 @@ const useStore = create(combine(initialState, (set, get) => {
 
       // broadcast mode change
       ws.send(JSON.stringify({ type: "mode", payload: { mode } }));
-      set((state) => ({
-        ...state,
+      set({
         mode,
-      }));
+      });
     },
-    connectToHost(id: string) {
+    async connectToHost(id: string) {
+      set({ connection: id });
+      const offer = await pc.createOffer({ offerToReceiveVideo: true });
+      await pc.setLocalDescription(offer);
       console.log("CONNECT TO HOST", id);
-      ws.send(JSON.stringify({ type: "message", to: id, payload: {
-        type: "offer"
-      } }));
+      ws.send(JSON.stringify({
+        type: "message",
+        to: id,
+        payload: {
+          type: "offer",
+          offer: {
+            sdp: offer.sdp,
+            type: offer.type,
+          },
+        },
+      }));
     },
   };
 }));

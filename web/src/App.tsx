@@ -4,8 +4,6 @@ import Navigation from "./components/Navigation";
 import Host from "./components/Host";
 import Connect from "./components/Connect";
 
-import useTilg from "tilg";
-
 // init firebase
 import "./lib/firebase";
 import useStore from "./lib/store";
@@ -65,7 +63,6 @@ function App() {
 
   const connected = useStore((state) => state.connected);
   const mode = useStore((state) => state.mode);
-  const s = useStore((state) => state.localStream);
 
   useEffect(() => {
     console.log("connected", connected);
@@ -77,6 +74,7 @@ function App() {
     justifyContent: "center",
     alignItems: "center",
     gap: "1rem",
+    margin: "0 1rem"
   });
 
   const ContentWrapper = styled("main", {

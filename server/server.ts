@@ -1,9 +1,12 @@
 import { ConnInfo, serve } from "https://deno.land/std@0.137.0/http/server.ts";
 import { nanoid } from "https://deno.land/x/nanoid@v3.0.0/mod.ts";
 
+import { generateNameCustom } from "https://deno.land/x/docker_names/mod.ts";
+
 class Client {
   ip: string;
   id: string;
+  name: string;
   socket: WebSocket;
   mode: string;
   constructor(
@@ -16,6 +19,7 @@ class Client {
     this.ip = req.headers.get("X-Forwarded-For")?.split(/\s*.\s*/)[0] ||
       (connInfo.remoteAddr as Deno.NetAddr).hostname;
     this.id = nanoid();
+    this.name = generateNameCustom(" ");
     this.mode = mode;
 
     /*
@@ -31,6 +35,7 @@ class Client {
   sanitize = () => ({
     id: this.id,
     mode: this.mode,
+    name: this.name,
   });
 }
 
@@ -144,16 +149,6 @@ class Room {
     }
   }
 }
-
-/* changeMode(client: Client, mode: string) {
-    // notify all clients
-    this.clients.forEach((c) => {
-      c.socket.send(
-        JSON.stringify({ type: "mode", client: { id: client.id, mode: mode } }),
-      );
-    });
-    client.mode = mode;
-  }*/
 
 // key is ip, this will not work with ipv6 (don't know if that's possible)
 const rooms = new Map<string, Room>();

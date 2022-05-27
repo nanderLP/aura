@@ -1,13 +1,12 @@
 import { FC, useEffect, useRef } from "react";
 import useStore from "../lib/store";
-import servers from "../lib/stun";
 import { styled } from "../styles/stitches.config";
 
 const Host: FC = () => {
   const me = useStore((state) => state.me);
   const remoteStream = useStore((state) => state.remoteStream);
 
-  const vidRef = useRef<HTMLVideoElement>();
+  const vidRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     if (remoteStream && vidRef.current) {

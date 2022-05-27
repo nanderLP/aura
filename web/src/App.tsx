@@ -4,8 +4,6 @@ import Navigation from "./components/Navigation";
 import Host from "./components/Host";
 import Connect from "./components/Connect";
 
-// init firebase
-import "./lib/firebase";
 import useStore from "./lib/store";
 import Intro from "./components/Intro";
 import { styled } from "./styles/stitches.config";
@@ -74,7 +72,7 @@ function App() {
     justifyContent: "center",
     alignItems: "center",
     gap: "1rem",
-    margin: "0 1rem"
+    margin: "0 1rem",
   });
 
   const ContentWrapper = styled("main", {

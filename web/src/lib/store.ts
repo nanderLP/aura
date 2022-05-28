@@ -119,9 +119,41 @@ const useStore = create(
               type: "ice",
               ice: event.candidate,
             },
-          })
+          }),
         );
       }
+    };
+
+    pc.onconnectionstatechange = () => {
+      console.log("CONN STATE", pc.connectionState);
+    };
+
+    pc.onsignalingstatechange = () => {
+      console.log("SIGNALING", pc.signalingState);
+    };
+
+    // i extracted this snippet from the disconnectFromPeer function because I use it twice
+    const resetRtc = () => {
+      // stop ALL tracks
+      const l = get().localStream;
+      const r = get().remoteStream;
+      l.getTracks().forEach((t) => {
+        t.stop();
+        l.removeTrack(t);
+      });
+      r.getTracks().forEach((t) => {
+        t.stop();
+        r.removeTrack(t);
+      });
+
+      // stop pc
+      pc.close();
+
+      // it's best to make a new RTCPeerConnection
+      // https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/close
+      const newPc = new RTCPeerConnection(servers);
+      // @ts-ignore - idk if i should do this or just reassign the local pc, i feel like this is more safe
+      set({ pc: newPc, connection: undefined });
     };
 
     // websocket stuff
@@ -174,17 +206,23 @@ const useStore = create(
                         sdp: answer.sdp,
                       },
                     },
-                  })
+                  }),
                 );
                 break;
               }
               case "answer": {
                 const answer = new RTCSessionDescription(payload.answer);
                 await pc.setRemoteDescription(answer);
+                break;
               }
               case "ice": {
                 const candidate = new RTCIceCandidate(payload.ice);
                 await pc.addIceCandidate(candidate);
+                break;
+              }
+              case "disconnect": {
+                resetRtc();
+                break;
               }
             }
             break;
@@ -275,11 +313,23 @@ const useStore = create(
                 type: offer.type,
               },
             },
-          })
+          }),
         );
       },
+      disconnectFromPeer() {
+        // tell peer to disconnect
+        ws.send(
+          JSON.stringify({
+            type: "message",
+            to: get().connection,
+            payload: { type: "disconnect" },
+          }),
+        );
+
+        resetRtc();
+      },
     };
-  })
+  }),
 );
 
 export default useStore;

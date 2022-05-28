@@ -16,13 +16,18 @@ const Host: FC = () => {
 
   const Video = styled("video", {
     aspectRatio: "16:9",
-    width: "1000px",
+    width: "500px",
   });
 
   return (
     <div>
       People will see you as <b>{me.name}</b>
-      <Video autoPlay playsInline ref={vidRef}></Video>
+      <Video
+        autoPlay
+        playsInline
+        onClick={() => vidRef.current?.requestFullscreen()}
+        ref={vidRef}
+      ></Video>
     </div>
   );
 };

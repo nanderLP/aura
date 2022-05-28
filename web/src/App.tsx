@@ -9,39 +9,26 @@ import Intro from "./components/Intro";
 import { styled } from "./styles/stitches.config";
 import StatusWidget from "./components/StatusWidget";
 
-const skipIntro = sessionStorage.getItem("introPlayed") === "true";
+// import useTilg from "tilg";
 
 function App() {
-  // intro handling
+  // I'd like to use tilg but the strict-mode double render safety feature makes it kinda annoying to look at
+  // useTilg();
 
-  const [intro, setIntro] = useState(!skipIntro);
-  useEffect(() => {
-    if (!skipIntro) {
-      setTimeout(() => {
-        setIntro(false);
-        sessionStorage.setItem("introPlayed", "true");
-      }, 2000);
-    }
-  });
-
-  // I'd like to use tilg but the strict-mode double render feature makes it kinda annoying to look at
-  // useTilg()`mode = ${mode}, intro = ${intro}`;
+  const controls = useAnimation();
 
   const connected = useStore((state) => state.connected);
   const mode = useStore((state) => state.mode);
 
   useEffect(() => {
-    console.log("connected", connected);
+    controls.start({
+      opacity: connected ? 1 : 0,
+      transition: {
+        duration: 0.5,
+        delay: 1.5,
+      },
+    });
   }, [connected]);
-
-  const Container = styled(m.div, {
-    height: "100%",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: "1rem",
-    margin: "0 1rem",
-  });
 
   const ContentWrapper = styled("main", {
     width: "100%",
@@ -50,23 +37,31 @@ function App() {
     },
   });
 
+  // so today i found out that framer motion breaks with stitches
+
   return (
     <>
       <Intro active={!connected} />
       <StatusWidget />
       {connected && (
-        <>
-          <Container
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1.5 }}
-          >
-            <Navigation />
-            <ContentWrapper>
-              {mode === "host" ? <Host /> : <Connect />}
-            </ContentWrapper>
-          </Container>
-        </>
+        <m.div
+          style={{
+            height: "100%",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            gap: "1rem",
+            margin: "0 1rem",
+          }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 1.5 }}
+        >
+          <Navigation />
+          <ContentWrapper>
+            {mode === "host" ? <Host /> : <Connect />}
+          </ContentWrapper>
+        </m.div>
       )}
     </>
   );

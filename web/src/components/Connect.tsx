@@ -30,6 +30,7 @@ const Connect: FC = () => {
   const pc = useStore((state) => state.pc);
 
   const connect = useStore((state) => state.connectToHost);
+  const disconnect = useStore((state) => state.disconnectFromPeer);
 
   // connected hosts
   const clients = useStore((state) => state.clients);
@@ -55,8 +56,9 @@ const Connect: FC = () => {
           pc.addTrack(v, localStream);
           v.onended = () => {
             console.log("END");
-            v.stop();
-            localStream.removeTrack(v);
+
+            disconnect();
+
             setStatus({
               color: "secondary",
               text: "select something to stream",

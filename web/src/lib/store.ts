@@ -157,7 +157,9 @@ const useStore = create(
     };
 
     // websocket stuff
-    const ws = new WebSocket("ws://localhost:8000?mode=" + defaultMode);
+    const ws = new WebSocket(
+      `ws://${import.meta.env.VITE_WEBSOCKET_URL}?mode=${defaultMode}`,
+    );
 
     ws.onopen = (e) => {
       console.log("CONNECTED", e);

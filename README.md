@@ -6,7 +6,7 @@
 
 <hr/>
 
-<img align="right" src="https://via.placeholder.com/400x250.png">
+<img align="right" width=50% src="https://user-images.githubusercontent.com/39925779/170829463-bd9b3255-f2da-4605-925f-9ad069892f85.png">
 
 <div align="center">
   <h3>aura is a web-based screensharing service.</h3>
@@ -20,4 +20,4 @@
     The backend is built using a custom <a href="https://deno.land">Deno</a> server. It is used to establish connections between clients and relay messages, 
     built using the <a href="https://developer.mozilla.org/docs/Web/API/WebSockets_API">WebSockets API</a>.
   </p>
-</div>
+</p>

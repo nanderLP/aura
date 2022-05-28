@@ -48,7 +48,11 @@ const Intro: FC<{ active: boolean }> = ({ active }) => {
           <Title
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -30 }}
+            exit={{
+              opacity: 0,
+              y: -30,
+              transition: { delay: 1, duration: 0.5 },
+            }}
             transition={{ duration: 0.5 }}
           >
             aura

@@ -1,5 +1,5 @@
 import { useEffect, useReducer, useRef, useState } from "react";
-import { AnimatePresence, m } from "framer-motion";
+import { AnimatePresence, m, useAnimation } from "framer-motion";
 import Navigation from "./components/Navigation";
 import Host from "./components/Host";
 import Connect from "./components/Connect";
@@ -9,10 +9,10 @@ import Intro from "./components/Intro";
 import { styled } from "./styles/stitches.config";
 import StatusWidget from "./components/StatusWidget";
 
+const skipIntro = sessionStorage.getItem("introPlayed") === "true";
+
 function App() {
   // intro handling
-
-  const skipIntro = sessionStorage.getItem("introPlayed") === "true";
 
   const [intro, setIntro] = useState(!skipIntro);
   useEffect(() => {
@@ -26,38 +26,6 @@ function App() {
 
   // I'd like to use tilg but the strict-mode double render feature makes it kinda annoying to look at
   // useTilg()`mode = ${mode}, intro = ${intro}`;
-
-  /* reworked in socket.ts
-  connect to backend
-  const ws = useRef<WebSocket>();
-  useEffect(() => {
-    ws.current = new WebSocket("ws://localhost:8000?mode=" + defaultMode);
-    ws.current.addEventListener("open", (e) => {
-      console.log("CONNECTED", e);
-    });
-    ws.current.addEventListener("close", (e) => {
-      console.log("DISCONNECTED", e);
-    });
-    ws.current.addEventListener("error", (e) => {
-      console.log("ERROR", e);
-    });
-
-    return () => ws.current?.close();
-  }, []);
-
-  // mode handling
-  const defaultMode = "connect";
-  const [mode, setMode] = useState(defaultMode);
-
-  // code
-  const broadcastMode = (mode: string) => {
-    ws.current?.send(JSON.stringify({ type: "mode", payload: { mode } }));
-  };
-
-  useEffect(() => {
-    broadcastMode(mode);
-  }, [mode]);
-  */
 
   const connected = useStore((state) => state.connected);
   const mode = useStore((state) => state.mode);
@@ -84,19 +52,21 @@ function App() {
 
   return (
     <>
-      <Intro active={intro} />
+      <Intro active={!connected} />
       <StatusWidget />
-      {!intro && (
-        <Container
-          initial={{ opacity: skipIntro ? 1 : 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1, duration: 0.5 }}
-        >
-          <Navigation />
-          <ContentWrapper>
-            {mode === "host" ? <Host /> : <Connect />}
-          </ContentWrapper>
-        </Container>
+      {connected && (
+        <>
+          <Container
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.5 }}
+          >
+            <Navigation />
+            <ContentWrapper>
+              {mode === "host" ? <Host /> : <Connect />}
+            </ContentWrapper>
+          </Container>
+        </>
       )}
     </>
   );

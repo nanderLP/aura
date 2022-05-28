@@ -158,7 +158,7 @@ const useStore = create(
 
     // websocket stuff
     const ws = new WebSocket(
-      `ws://${import.meta.env.VITE_WEBSOCKET_URL}?mode=${defaultMode}`,
+      `${import.meta.env.VITE_WEBSOCKET_PROTOCOL}${import.meta.env.VITE_WEBSOCKET_URL}?mode=${defaultMode}`,
     );
 
     ws.onopen = (e) => {

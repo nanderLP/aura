@@ -119,7 +119,7 @@ const useStore = create(
               type: "ice",
               ice: event.candidate,
             },
-          }),
+          })
         );
       }
     };
@@ -158,7 +158,9 @@ const useStore = create(
 
     // websocket stuff
     const ws = new WebSocket(
-      `${import.meta.env.VITE_WEBSOCKET_PROTOCOL}${import.meta.env.VITE_WEBSOCKET_URL}?mode=${defaultMode}`,
+      `${import.meta.env.VITE_WEBSOCKET_PROTOCOL}${
+        import.meta.env.VITE_WEBSOCKET_URL
+      }?mode=${defaultMode}`
     );
 
     ws.onopen = (e) => {
@@ -208,7 +210,7 @@ const useStore = create(
                         sdp: answer.sdp,
                       },
                     },
-                  }),
+                  })
                 );
                 break;
               }
@@ -315,7 +317,7 @@ const useStore = create(
                 type: offer.type,
               },
             },
-          }),
+          })
         );
       },
       disconnectFromPeer() {
@@ -325,13 +327,13 @@ const useStore = create(
             type: "message",
             to: get().connection,
             payload: { type: "disconnect" },
-          }),
+          })
         );
 
         resetRtc();
       },
     };
-  }),
+  })
 );
 
 export default useStore;

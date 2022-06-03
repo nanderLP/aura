@@ -1,4 +1,4 @@
-import { useEffect, useReducer, useRef, useState } from "react";
+import { useEffect, useReducer, useRef } from "react";
 import { AnimatePresence, m, useAnimation } from "framer-motion";
 import Navigation from "./components/Navigation";
 import Host from "./components/Host";
